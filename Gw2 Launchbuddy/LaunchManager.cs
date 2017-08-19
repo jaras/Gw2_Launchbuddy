@@ -49,10 +49,10 @@ namespace Gw2_Launchbuddy
 
             GFXManager.RestoreDefault();
 
-            //Launching AddOns
+            //Launching Singleton AddOns
             try
             {
-                AddOnManager.LaunchAll();
+                AddOnManager.SingletonAddon();
             }
             catch (Exception err)
             {
@@ -74,6 +74,16 @@ namespace Gw2_Launchbuddy
                 {
                     Account undefacc = new Account("Acc Nr" + Globals.LinkedAccs.Count, null, null);
                     Globals.LinkedAccs.Add(new AccountClient(undefacc, gw2Client));
+                }
+
+                //Launching multilauch addons before.
+                try
+                {
+                    AddOnManager.LaunchAllBefore();
+                }
+                catch (Exception err)
+                {
+                    MessageBox.Show("One or more multilaunch before AddOns could not be launched.\n" + err.Message);
                 }
 
                 try
@@ -101,19 +111,19 @@ namespace Gw2_Launchbuddy
                     }
                 }
 
-                if (Properties.Settings.Default.use_reshade)
+                if (Properties.Settings.Default.use_priority)
                 {
-                    try
-                    {
-                        ProcessStartInfo unlockerpro = new ProcessStartInfo();
-                        unlockerpro.FileName = Globals.unlockerpath;
-                        unlockerpro.WorkingDirectory = Path.GetDirectoryName(Globals.unlockerpath);
-                        Process.Start(unlockerpro);
-                    }
-                    catch (Exception err)
-                    {
-                        MessageBox.Show("Could not launch ReshadeUnlocker. Invalid path?\n" + err.Message);
-                    }
+                    gw2Client.SetPriority(Properties.Settings.Default.priority);
+                }
+
+                //Launching multilauch addons after.
+                try
+                {
+                    AddOnManager.LaunchAllAfter();
+                }
+                catch (Exception err)
+                {
+                    MessageBox.Show("One or more multilaunch after AddOns could not be launched.\n" + err.Message);
                 }
             }
             catch (Exception err)

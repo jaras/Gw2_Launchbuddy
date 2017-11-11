@@ -118,6 +118,13 @@ namespace Gw2_Launchbuddy
 
         private void SettingsTabSetup()
         {
+            try {
+                tab_options.SelectedIndex = Gw2_Launchbuddy.Properties.Settings.Default.ui_selectedtab;
+            }
+            catch
+            {
+                tab_options.SelectedIndex = 0;
+            }
             cb_lbupdatescheck.IsChecked = Properties.Settings.Default.notifylbupdate;
             cb_useinstancegui.IsChecked = Properties.Settings.Default.useinstancegui;
         }
@@ -1182,6 +1189,13 @@ namespace Gw2_Launchbuddy
         {
             if (e.Source is TabControl)
             {
+                Gw2_Launchbuddy.Properties.Settings.Default.ui_selectedtab = (e.Source as TabControl).SelectedIndex;
+                if (tab_clientfix.IsSelected)
+                {
+                    CrashAnalyzer.ReadCrashLogs();
+                    lv_crashlogs.ItemsSource = CrashAnalyzer.Crashlogs;
+                    lb_lastcrashes.Content = "Last Crashes (" + CrashAnalyzer.Crashlogs.Count() + " Crashes found)";
+                }
                 RefreshUI();
             }
         }
@@ -1761,6 +1775,8 @@ namespace Gw2_Launchbuddy
             }
         }
 
+
+
         private void bt_selecticon_Click(object sender, RoutedEventArgs e)
         {
             Account acc = (sender as Button).DataContext as Account;
@@ -1927,6 +1943,27 @@ namespace Gw2_Launchbuddy
         {
             Properties.Settings.Default.useinstancegui = (bool)cb_useinstancegui.IsChecked;
             Properties.Settings.Default.Save();
+        }
+
+        private void lv_crashlogs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Crashlog log= (sender as ListView).SelectedItem as Crashlog;
+            if (log!=null)
+            {
+                tblock_crashinfo.Text = log.Quickinfo;
+                tblock_crashsolutioninfo.Text = log.Solutioninfo;
+                bt_fixcrash.IsEnabled = log.IsSolveable;
+            }
+        }
+
+        private void bt_fixcrash_Click(object sender, RoutedEventArgs e)
+        {
+            (lv_crashlogs.SelectedItem as Crashlog).Solve();
+        }
+
+        private void bt_patreon_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Process.Start("https://www.patreon.com/gw2launchbuddy");
         }
 
         private void sl_logoendpos_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
